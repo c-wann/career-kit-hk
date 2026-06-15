@@ -1,0 +1,27 @@
+{
+  "nav": {
+    "home": "Home",
+    "tools": "Tools",
+    "pricing": "Pricing",
+    "login": "Login"
+  },
+  "hero": {
+    "title": "Your Career & Freelance Toolkit",
+    "subtitle": "Built for Hong Kong professionals — land more jobs, close more clients.",
+    "cta": "Try Free"
+  },
+  "tools": {
+    "cv": {
+      "name": "CV Achievement Rewriter",
+      "description": "Turn weak bullet points into powerful achievements"
+    },
+    "sop": {
+      "name": "Client SOP Builder",
+      "description": "Generate onboarding templates for your freelance business"
+    },
+    "planner": {
+      "name": "Weekly Planner",
+      "description": "Structured weekly goals for job seekers and freelancers"
+    }
+  }
+}
