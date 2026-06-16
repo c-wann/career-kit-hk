@@ -1,205 +1,333 @@
-import Image from "next/image";
-import Link from "next/link";
+'use client'
 
-function ProductButton({ plan, label }: { plan: string; label: string }) {
-  return (
-    <Link
-      href={`/api/checkout/${plan}`}
-      className="inline-flex h-11 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/90"
-    >
-      {label}
-    </Link>
-  );
+import { useState } from 'react'
+import Link from 'next/link'
+
+type Lang = 'en' | 'zh'
+
+const copy = {
+  en: {
+    nav: { tools: 'Tools', pricing: 'Pricing', login: 'Login' },
+    hero: {
+      badge: '🇭🇰 Made for Hong Kong',
+      title: 'Your Career & Freelance Toolkit',
+      subtitle: 'Built for Hong Kong professionals — land more jobs, close more clients.',
+      cta: 'Try Free',
+      ctaSecondary: 'See All Tools',
+    },
+    tools: {
+      heading: 'Three Tools. One Kit.',
+      items: [
+        {
+          id: 'cv',
+          icon: '📝',
+          name: 'CV Achievement Rewriter',
+          description: 'Turn weak bullet points into powerful, measurable achievements that get you interviews.',
+          tag: 'Job Seeker',
+        },
+        {
+          id: 'sop',
+          icon: '📋',
+          name: 'Client SOP Builder',
+          description: 'Generate onboarding templates, quotation structures, and follow-up sequences for your freelance business.',
+          tag: 'Freelancer',
+        },
+        {
+          id: 'planner',
+          icon: '📅',
+          name: 'Weekly Planner',
+          description: 'Get a structured day-by-day schedule and goal tracker built around your available hours.',
+          tag: 'Both',
+        },
+      ],
+      tryNow: 'Try Now →',
+    },
+    pricing: {
+      heading: 'Simple, Transparent Pricing',
+      subheading: 'One payment. Lifetime access.',
+      tiers: [
+        {
+          name: 'Free Preview',
+          price: 'HKD 0',
+          period: '',
+          features: ['1 use per tool', 'All 3 tools', 'No credit card needed'],
+          cta: 'Start Free',
+          highlight: false,
+          plan: '',
+        },
+        {
+          name: 'One-time',
+          price: 'HKD 399',
+          period: 'one-time',
+          features: ['Unlimited uses', 'All 3 tools', 'Lifetime access', 'Future tools included'],
+          cta: 'Buy Now',
+          highlight: true,
+          plan: 'onetime',
+        },
+        {
+          name: 'Pro Monthly',
+          price: 'HKD 149',
+          period: '/mo',
+          features: ['Unlimited uses', 'All 3 tools', 'Future updates', 'Priority support'],
+          cta: 'Subscribe',
+          highlight: false,
+          plan: 'monthly',
+        },
+        {
+          name: 'Pro Annual',
+          price: 'HKD 1,299',
+          period: '/yr',
+          features: ['Unlimited uses', 'All 3 tools', 'Future updates', 'Priority support', 'Best value'],
+          cta: 'Subscribe',
+          highlight: false,
+          plan: 'annual',
+        },
+      ],
+    },
+    footer: 'Built for Hong Kong. © 2026 Career Kit HK.',
+  },
+  zh: {
+    nav: { tools: '工具', pricing: '定價', login: '登入' },
+    hero: {
+      badge: '🇭🇰 專為香港而設',
+      title: '你嘅求職 & 接案效率工具包',
+      subtitle: '專為香港專業人士而設 — 搵工更快，接客更穩。',
+      cta: '免費試用',
+      ctaSecondary: '睇晒所有工具',
+    },
+    tools: {
+      heading: '三個工具，一個工具包。',
+      items: [
+        {
+          id: 'cv',
+          icon: '📝',
+          name: 'CV 成就改寫器',
+          description: '將普通經歷句轉化為有力嘅成就陳述，令你嘅 CV 更突出，提升面試機會。',
+          tag: '求職者',
+        },
+        {
+          id: 'sop',
+          icon: '📋',
+          name: '客戶 SOP 生成器',
+          description: '一鍵生成客戶跟進流程、報價結構同跟進訊息，令你嘅自由接案更專業。',
+          tag: '自由工作者',
+        },
+        {
+          id: 'planner',
+          icon: '📅',
+          name: '週計劃生成器',
+          description: '根據你嘅可用時間，制定逐日行動計劃，幫你更有效地搵工或接案。',
+          tag: '兩者皆宜',
+        },
+      ],
+      tryNow: '立即試用 →',
+    },
+    pricing: {
+      heading: '清晰透明嘅定價',
+      subheading: '一次付款，終身使用。',
+      tiers: [
+        {
+          name: '免費預覽',
+          price: 'HKD 0',
+          period: '',
+          features: ['每個工具用1次', '全部3個工具', '唔需要信用卡'],
+          cta: '立即試用',
+          highlight: false,
+          plan: '',
+        },
+        {
+          name: '一次付款',
+          price: 'HKD 399',
+          period: '一次性',
+          features: ['無限次使用', '全部3個工具', '終身使用', '包括未來工具'],
+          cta: '立即購買',
+          highlight: true,
+          plan: 'onetime',
+        },
+        {
+          name: '月費 Pro',
+          price: 'HKD 149',
+          period: '/月',
+          features: ['無限次使用', '全部3個工具', '未來更新', '優先支援'],
+          cta: '立即訂閱',
+          highlight: false,
+          plan: 'monthly',
+        },
+        {
+          name: '年費 Pro',
+          price: 'HKD 1,299',
+          period: '/年',
+          features: ['無限次使用', '全部3個工具', '未來更新', '優先支援', '最抵用'],
+          cta: '立即訂閱',
+          highlight: false,
+          plan: 'annual',
+        },
+      ],
+    },
+    footer: '專為香港而建。© 2026 Career Kit HK.',
+  },
 }
 
 export default function Home() {
-  return (
-    <div className="min-h-full flex flex-col bg-zinc-50 text-zinc-900 dark:bg-black dark:text-zinc-50">
-      <header className="w-full border-b border-zinc-200/70 bg-white/80 backdrop-blur dark:border-zinc-800/70 dark:bg-black/60">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="relative h-9 w-9">
-              <Image src="/favicon.ico" alt="Logo" fill className="rounded" />
-            </div>
-            <div>
-              <div className="text-sm font-semibold">Career Kit HK</div>
-              <div className="text-xs text-zinc-600 dark:text-zinc-400">CV / SOP 工具包</div>
-            </div>
-          </div>
+  const [lang, setLang] = useState<Lang>('en')
+  const t = copy[lang]
 
+  return (
+    <div className="min-h-screen bg-white text-zinc-900">
+      {/* Navbar */}
+      <header className="sticky top-0 z-50 border-b border-zinc-100 bg-white/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <span className="text-lg font-bold tracking-tight text-indigo-600">Career Kit HK</span>
+          <nav className="hidden gap-8 text-sm font-medium text-zinc-600 md:flex">
+            <a href="#tools" className="transition hover:text-indigo-600">{t.nav.tools}</a>
+            <a href="#pricing" className="transition hover:text-indigo-600">{t.nav.pricing}</a>
+          </nav>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
+              className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 transition hover:border-indigo-300 hover:text-indigo-600"
+            >
+              {lang === 'en' ? '中文' : 'EN'}
+            </button>
             <a
               href="#pricing"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
+              className="rounded-full bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-indigo-700"
             >
-              Pricing
-            </a>
-            <a
-              href="#faq"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-50"
-            >
-              FAQ
+              {t.hero.cta}
             </a>
           </div>
         </div>
       </header>
 
-      <main className="flex-1">
-        <section className="mx-auto w-full max-w-5xl px-6 pt-12 pb-10">
-          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
-            <div>
-              <div className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-200">
-                一鍵生成 • 中英雙語 • 可重複使用
+      {/* Hero */}
+      <section className="mx-auto max-w-6xl px-6 py-28 text-center">
+        <div className="mx-auto max-w-2xl">
+          <span className="mb-5 inline-block rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600">
+            {t.hero.badge}
+          </span>
+          <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-zinc-900">
+            {t.hero.title}
+          </h1>
+          <p className="mb-10 text-xl leading-relaxed text-zinc-500">{t.hero.subtitle}</p>
+          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <a
+              href="#pricing"
+              className="rounded-full bg-indigo-600 px-8 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+            >
+              {t.hero.cta}
+            </a>
+            <a
+              href="#tools"
+              className="rounded-full border border-zinc-200 px-8 py-3 text-base font-semibold text-zinc-700 transition hover:border-zinc-300 hover:bg-zinc-50"
+            >
+              {t.hero.ctaSecondary}
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Tools */}
+      <section id="tools" className="bg-zinc-50 py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <h2 className="mb-16 text-center text-3xl font-bold text-zinc-900">{t.tools.heading}</h2>
+          <div className="grid gap-8 md:grid-cols-3">
+            {t.tools.items.map((tool) => (
+              <div
+                key={tool.id}
+                className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-zinc-100 transition hover:shadow-md"
+              >
+                <div className="mb-4 text-4xl">{tool.icon}</div>
+                <span className="mb-3 inline-block rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-600">
+                  {tool.tag}
+                </span>
+                <h3 className="mb-3 text-xl font-semibold text-zinc-900">{tool.name}</h3>
+                <p className="leading-relaxed text-zinc-500">{tool.description}</p>
+                <button className="mt-6 text-sm font-medium text-indigo-600 transition hover:underline">
+                  {t.tools.tryNow}
+                </button>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
-                由「空白」到「可用」CV / SOP — 5 分鐘完成
-              </h1>
-
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
-                針對香港求職同接案情境：提供模板 + 寫作提示，令你快速整理重點、寫得更清晰、面試更有底。
-                <br />
-                <span className="text-sm">（基本網店部署完成：而家只差你填入 Stripe Price ID（monthly/annual）同 webhook secret。）</span>
-              </p>
-
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <ProductButton plan="onetime" label="立即購買（一次性）" />
-                <a
-                  href="#pricing"
-                  className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-200 bg-white px-6 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/40 dark:text-zinc-50 dark:hover:bg-zinc-900/70"
+      {/* Pricing */}
+      <section id="pricing" className="py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mb-16 text-center">
+            <h2 className="mb-3 text-3xl font-bold text-zinc-900">{t.pricing.heading}</h2>
+            <p className="text-zinc-500">{t.pricing.subheading}</p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-4">
+            {t.pricing.tiers.map((tier) => (
+              <div
+                key={tier.name}
+                className={`rounded-2xl p-8 ring-1 transition ${
+                  tier.highlight
+                    ? 'scale-105 bg-indigo-600 text-white shadow-xl ring-indigo-600'
+                    : 'bg-white text-zinc-900 ring-zinc-100 hover:shadow-md'
+                }`}
+              >
+                <h3
+                  className={`mb-2 text-xs font-semibold uppercase tracking-wide ${
+                    tier.highlight ? 'text-indigo-200' : 'text-zinc-500'
+                  }`}
                 >
-                  睇方案 / See pricing
-                </a>
-              </div>
-
-              <div className="mt-6 flex flex-wrap gap-2">
-                <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
-                  Licence keys 自動發送
-                </span>
-                <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-200">
-                  Checkout URL 由 API 產生
-                </span>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/30">
-              <div className="text-sm font-semibold">示範輸出（Preview）</div>
-              <div className="mt-4 grid gap-3">
-                <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-950/40">
-                  <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">CV 改寫示例</div>
-                  <div className="mt-1 text-sm text-zinc-900 dark:text-zinc-50">
-                    把「做咗好多嘢」變成「可量化成果」：
-                    <br />
-                    <span className="text-zinc-700 dark:text-zinc-200">
-                      • 提升回覆率 +23% • 縮短交付時間 -30%
+                  {tier.name}
+                </h3>
+                <div className="mb-6 flex items-baseline gap-1">
+                  <span className="text-3xl font-bold">{tier.price}</span>
+                  {tier.period && (
+                    <span className={`text-sm ${tier.highlight ? 'text-indigo-200' : 'text-zinc-400'}`}>
+                      {tier.period}
                     </span>
-                  </div>
+                  )}
                 </div>
-
-                <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-950/40">
-                  <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-300">SOP 生成示例</div>
-                  <div className="mt-1 text-sm text-zinc-900 dark:text-zinc-50">
-                    由流程圖 → 步驟清單 → 每一步嘅輸入/輸出/注意事項。
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-dashed border-zinc-200 p-4 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                  Tip：而家需要做嘅只係部署網站同綁定 Stripe Price ID，之後 webhook 會自動分配 Licence Key。
-                </div>
+                <ul className="mb-8 space-y-2">
+                  {tier.features.map((f) => (
+                    <li
+                      key={f}
+                      className={`flex items-center gap-2 text-sm ${
+                        tier.highlight ? 'text-indigo-100' : 'text-zinc-600'
+                      }`}
+                    >
+                      <span className={tier.highlight ? 'text-indigo-300' : 'text-indigo-500'}>✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                {tier.plan ? (
+                  <Link
+                    href={`/api/checkout/${tier.plan}`}
+                    className={`block w-full rounded-full py-2.5 text-center text-sm font-semibold transition ${
+                      tier.highlight
+                        ? 'bg-white text-indigo-600 hover:bg-indigo-50'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    }`}
+                  >
+                    {tier.cta}
+                  </Link>
+                ) : (
+                  <button
+                    className={`w-full rounded-full py-2.5 text-sm font-semibold transition ${
+                      tier.highlight
+                        ? 'bg-white text-indigo-600 hover:bg-indigo-50'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    }`}
+                  >
+                    {tier.cta}
+                  </button>
+                )}
               </div>
-            </div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section id="pricing" className="mx-auto w-full max-w-5xl px-6 pb-12">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-semibold">Pricing 方案</h2>
-              <p className="mt-2 text-zinc-600 dark:text-zinc-300">
-                先用基本網店接到「買」；之後再根據銷售反饋加功能同訂閱。
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/30">
-              <div className="text-sm font-semibold">一次性（CV / SOP 工具包）</div>
-              <div className="mt-3 flex items-end gap-2">
-                <div className="text-4xl font-semibold">HKD 399</div>
-                <div className="pb-1 text-sm text-zinc-600 dark:text-zinc-300">one-time</div>
-              </div>
-              <ul className="mt-5 space-y-2 text-sm text-zinc-600 dark:text-zinc-300">
-                <li>• Licence keys 立即發送</li>
-                <li>• 中英寫作提示 + 模板</li>
-                <li>• 可重複用（無限次生成）</li>
-              </ul>
-              <div className="mt-6">
-                <ProductButton plan="onetime" label="Buy once" />
-              </div>
-            </div>
-
-            <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/30 lg:-mt-2">
-              <div className="absolute right-4 top-4 rounded-full bg-black px-3 py-1 text-xs font-semibold text-white">
-                最受歡迎
-              </div>
-              <div className="text-sm font-semibold">月費（更新 + 新模板）</div>
-              <div className="mt-3 flex items-end gap-2">
-                <div className="text-4xl font-semibold">HKD 149</div>
-                <div className="pb-1 text-sm text-zinc-600 dark:text-zinc-300">/ month</div>
-              </div>
-              <ul className="mt-5 space-y-2 text-sm text-zinc-600 dark:text-zinc-300">
-                <li>• 每月新增模板 / 提示</li>
-                <li>• 優先出新功能</li>
-              </ul>
-              <div className="mt-6">
-                <ProductButton plan="monthly" label="Buy monthly" />
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/30">
-              <div className="text-sm font-semibold">年費（最佳價）</div>
-              <div className="mt-3 flex items-end gap-2">
-                <div className="text-4xl font-semibold">HKD 999</div>
-                <div className="pb-1 text-sm text-zinc-600 dark:text-zinc-300">/ year</div>
-              </div>
-              <ul className="mt-5 space-y-2 text-sm text-zinc-600 dark:text-zinc-300">
-                <li>• 年度更新 + 新模板</li>
-                <li>• 比月費更省</li>
-              </ul>
-              <div className="mt-6">
-                <ProductButton plan="annual" label="Buy yearly" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="faq" className="mx-auto w-full max-w-5xl px-6 pb-16">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/30">
-            <h2 className="text-2xl font-semibold">FAQ</h2>
-            <div className="mt-4 space-y-4 text-sm text-zinc-600 dark:text-zinc-300">
-              <p>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-50">Q：而家可以直接買嗎？</span>
-                <br />
-                A：前端部署好咗；真正付款要你填入 Stripe Price ID（以及 STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET）。
-              </p>
-              <p>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-50">Q：點解我買完會去邊？</span>
-                <br />
-                A：我會用你 .env 裡嘅 NEXT_PUBLIC_APP_URL 當作 redirect URL。
-              </p>
-              <p>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-50">Q：我想用自己 domain，點做？</span>
-                <br />
-                A：部署到 Vercel/Azure 之後，照住佢要求做 DNS（CNAME / A / AAAA）。我可以逐步同你對。
-              </p>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="border-t border-zinc-200/70 bg-white/80 py-8 text-center text-xs text-zinc-500 dark:border-zinc-800/70 dark:bg-black/60 dark:text-zinc-400">
-        © {new Date().getFullYear()} Career Kit HK. All rights reserved.
+      {/* Footer */}
+      <footer className="border-t border-zinc-100 py-10 text-center text-sm text-zinc-400">
+        {t.footer}
       </footer>
     </div>
-  );
+  )
 }

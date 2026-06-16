@@ -1,7 +1,7 @@
 # 📋 Product Specification — Career Kit HK
 
 ## Overview
-A bilingual (EN/繁中) web-based toolkit sold via Lemon Squeezy, deployed on Vercel.
+A bilingual (EN/繁中) web-based toolkit sold via **Stripe**, content managed via **Strapi headless CMS**, deployed on Vercel.
 
 ---
 
@@ -116,12 +116,52 @@ Generate a personalized weekly action plan with goal tracking.
 
 ## Tech Architecture
 
+### Stack
+| Layer | Choice | Notes |
+|---|---|---|
+| Frontend | **Next.js 16** (Vercel) | App Router, React 19 |
+| CMS | **Strapi 5** (Strapi Cloud) | Headless; manages products, pricing copy, i18n content, user licences |
+| Payments | **Stripe** | Checkout Sessions + Webhooks; Price IDs stored in Strapi or env vars |
+| AI | OpenAI API | Used by all three tool API routes |
+| Auth / Access | Stripe webhook → Strapi Users | On `checkout.session.completed`, create/update Strapi user with purchased plan |
+
+### Request Flow
+
 ```
 User → Next.js (Vercel)
-         ↓
-   [Tool Page] → API Route → OpenAI / Template Engine
-         ↓
-   Lemon Squeezy (Checkout)
-         ↓
-   Webhook → Unlock access (DB: Vercel KV / Supabase)
+    ├─ GET /api/checkout/[plan]  → Stripe Checkout Session → stripe.com
+    │                                      ↓ (on success)
+    │                             Stripe Webhook (POST /api/stripe-webhook)
+    │                                      ↓
+    │                             Strapi REST API  → create/update user + licence
+    │
+    ├─ Tool pages  → /api/tools/[tool]  → OpenAI API  → streamed response
+    │
+    └─ Content     → Strapi REST/GraphQL → product names, pricing copy, i18n strings
+```
+
+### Strapi Content Types
+```
+Product          – name, slug, description (EN/ZH), features[], price, stripePrice Id
+Licence          – userId, plan, purchasedAt, expiresAt (null = lifetime)
+User (extended)  – email, stripeCustomerId, licences[]
+```
+
+### Strapi → Next.js Integration
+- Fetch product/pricing content from Strapi at build time (`generateStaticParams`) or with ISR
+- Use Strapi's built-in i18n plugin for EN/ZH content variants
+- Strapi Admin Panel replaces hard-coded copy in `page.tsx` — editors can update pricing without a redeploy
+
+### Environment Variables Required
+```
+STRAPE_SECRET_KEY            # Stripe secret key
+STRIPE_WEBHOOK_SECRET        # Stripe webhook signing secret
+STRIPE_PRICE_ID_ONETIME      # Stripe Price ID for one-time plan
+STRIPE_PRICE_ID_MONTHLY      # Stripe Price ID for monthly plan
+STRIPE_PRICE_ID_ANNUAL       # Stripe Price ID for annual plan
+NEXT_PUBLIC_STRIPE_KEY       # Stripe publishable key (optional, for Stripe.js)
+STRAPI_URL                   # e.g. https://your-project.strapiapp.com
+STRAPI_API_TOKEN             # Strapi API token (read-only for frontend)
+STRAPI_ADMIN_API_TOKEN       # Strapi API token (write, for webhook handler)
+NEXT_PUBLIC_APP_URL          # e.g. https://career-kit-hk.vercel.app
 ```
