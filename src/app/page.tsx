@@ -59,7 +59,7 @@ export default function Home() {
               <p className="mt-4 max-w-xl text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
                 針對香港求職同接案情境：提供模板 + 寫作提示，令你快速整理重點、寫得更清晰、面試更有底。
                 <br />
-                <span className="text-sm">（基本網店部署完成：而家只差你填入 Lemon Squeezy 變體 ID。）</span>
+                <span className="text-sm">（基本網店部署完成：而家只差你填入 Stripe Price ID（monthly/annual）同 webhook secret。）</span>
               </p>
 
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -104,7 +104,7 @@ export default function Home() {
                 </div>
 
                 <div className="rounded-xl border border-dashed border-zinc-200 p-4 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                  Tip：而家需要做嘅只係部署網站同綁定 Lemon Squeezy 變體 ID。
+                  Tip：而家需要做嘅只係部署網站同綁定 Stripe Price ID，之後 webhook 會自動分配 Licence Key。
                 </div>
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function Home() {
               <p>
                 <span className="font-semibold text-zinc-900 dark:text-zinc-50">Q：而家可以直接買嗎？</span>
                 <br />
-                A：前端部署好咗；真正付款要你填入 Lemon Squeezy 變體 ID（以及 API Key / Store ID）。
+                A：前端部署好咗；真正付款要你填入 Stripe Price ID（以及 STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET）。
               </p>
               <p>
                 <span className="font-semibold text-zinc-900 dark:text-zinc-50">Q：點解我買完會去邊？</span>

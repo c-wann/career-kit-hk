@@ -1,28 +1,28 @@
 import { NextResponse } from "next/server";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Stripe = require("stripe");
 
 type Plan = "onetime" | "monthly" | "annual";
+
+export const runtime = "nodejs";
 
 function getPlanVariantId(plan: Plan): string | undefined {
   switch (plan) {
     case "onetime":
-      return process.env.NEXT_PUBLIC_PRODUCT_ONETIME_VARIANT_ID ?? process.env.PRODUCT_ONETIME_VARIANT_ID;
+      return process.env.STRIPE_PRICE_ID_ONETIME ?? process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ONETIME;
     case "monthly":
-      return process.env.NEXT_PUBLIC_PRODUCT_MONTHLY_VARIANT_ID ?? process.env.PRODUCT_MONTHLY_VARIANT_ID;
+      return process.env.STRIPE_PRICE_ID_MONTHLY ?? process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_MONTHLY;
     case "annual":
-      return process.env.NEXT_PUBLIC_PRODUCT_ANNUAL_VARIANT_ID ?? process.env.PRODUCT_ANNUAL_VARIANT_ID;
+      return process.env.STRIPE_PRICE_ID_ANNUAL ?? process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_ANNUAL;
   }
 }
 
-function getStoreId(): string | undefined {
-  return process.env.NEXT_PUBLIC_LEMONSQUEEZY_STORE_ID ?? process.env.LEMONSQUEEZY_STORE_ID;
+function getMode(plan: Plan): "subscription" | "payment" {
+  if (plan === "monthly" || plan === "annual") return "subscription";
+  return "payment";
 }
 
-export async function GET(
-  _req: Request,
-  ctx: {
-    params: Promise<{ plan: string }>;
-  }
-) {
+export async function GET(_req: Request, ctx: { params: Promise<{ plan: string }> }) {
   const { plan: planRaw } = await ctx.params;
   const plan = planRaw as Plan;
 
@@ -30,82 +30,46 @@ export async function GET(
     return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
   }
 
-  const apiKey = process.env.LEMON_SQUEEZY_API_KEY;
-  const storeId = getStoreId();
-  const variantId = getPlanVariantId(plan);
-
-  if (!apiKey) {
-    return NextResponse.json({ error: "Missing LEMON_SQUEEZY_API_KEY" }, { status: 500 });
-  }
-  if (!storeId) {
-    return NextResponse.json(
-      { error: "Missing LEMON_SQUEEZY_STORE_ID (or NEXT_PUBLIC_LEMONSQUEEZY_STORE_ID)" },
-      { status: 500 }
-    );
-  }
-  if (!variantId) {
-    return NextResponse.json({ error: `Missing variant id for plan=${plan}` }, { status: 500 });
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeSecretKey) {
+    return NextResponse.json({ error: "Missing STRIPE_SECRET_KEY" }, { status: 500 });
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
-  const redirectUrl = appUrl ? `${appUrl}/` : undefined;
+  const priceId = getPlanVariantId(plan);
+  if (!priceId) {
+    return NextResponse.json({ error: `Missing Stripe Price ID for plan=${plan}` }, { status: 500 });
+  }
 
-  const payload: any = {
-    data: {
-      type: "checkouts",
-      relationships: {
-        store: {
-          data: {
-            type: "stores",
-            id: storeId,
-          },
-        },
-        variant: {
-          data: {
-            type: "variants",
-            id: String(variantId),
-          },
-        },
+  const stripe = new Stripe(stripeSecretKey, { apiVersion: "2024-06-20" });
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+  const mode = getMode(plan);
+  const successUrl = `${appUrl}/deliver?session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `${appUrl}/`;
+
+  const session = await stripe.checkout.sessions.create({
+    mode,
+    line_items: [
+      {
+        price: priceId,
+        quantity: 1,
       },
+    ],
+    metadata: {
+      plan,
     },
-  };
-
-  if (redirectUrl) {
-    payload.data.attributes = {
-      product_options: {
-        redirect_url: redirectUrl,
-      },
-    };
-  }
-
-  const res = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
-    method: "POST",
-    headers: {
-      Accept: "application/vnd.api+json",
-      "Content-Type": "application/vnd.api+json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(payload),
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    // Helpful for stable customer linkage.
+    customer_creation: "always",
+    // For subscription mode, this gives you subscription + renewals in Stripe.
+    allow_promotion_codes: false,
   });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    return NextResponse.json(
-      {
-        error: "LemonSqueezy create-checkout failed",
-        status: res.status,
-        body: text,
-      },
-      { status: 502 }
-    );
+  if (!session.url) {
+    return NextResponse.json({ error: "Stripe did not return session.url" }, { status: 502 });
   }
 
-  const json = (await res.json().catch(() => ({}))) as any;
-  const checkoutUrl = json?.data?.attributes?.url;
-
-  if (!checkoutUrl || typeof checkoutUrl !== "string") {
-    return NextResponse.json({ error: "Missing checkout url in response" }, { status: 502 });
-  }
-
-  return NextResponse.redirect(checkoutUrl);
+  return NextResponse.redirect(session.url);
 }
